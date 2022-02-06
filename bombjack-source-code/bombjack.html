@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bombjack</title>
+  <script src="../../jsgame0.js"></script>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+.hidden {
+  display: none;
+}
+#original {
+  margin-left: 1em;
+}
+  </style>
+</head>
+
+<body>
+<section id="imageLoader" class="hidden">
+  <img class="hidden" src="images/background.png" alt="background" data-name="background">
+  <img class="hidden" src="images/bomb0.png" alt="bomb0" data-name="bomb0">
+  <img class="hidden" src="images/bomb1.png" alt="bomb1" data-name="bomb1">
+  <img class="hidden" src="images/bomb2.png" alt="bomb2" data-name="bomb2">
+  <img class="hidden" src="images/bomb3.png" alt="bomb3" data-name="bomb3">
+  <img class="hidden" src="images/bomb4.png" alt="bomb4" data-name="bomb4">
+  <img class="hidden" src="images/ground.png" alt="ground" data-name="ground">
+  <img class="hidden" src="images/jackd.png" alt="jackd" data-name="jackd">
+  <img class="hidden" src="images/jackf.png" alt="jackf" data-name="jackf">
+  <img class="hidden" src="images/jackl1.png" alt="jackl1" data-name="jackl1">
+  <img class="hidden" src="images/jackl2.png" alt="jackl2" data-name="jackl2">
+  <img class="hidden" src="images/jacklf.png" alt="jacklf" data-name="jacklf">
+  <img class="hidden" src="images/jackr1.png" alt="jackr1" data-name="jackr1">
+  <img class="hidden" src="images/jackr2.png" alt="jackr2" data-name="jackr2">
+  <img class="hidden" src="images/jackrf.png" alt="jackrf" data-name="jackrf">
+  <img class="hidden" src="images/jacku.png" alt="jacku" data-name="jacku">
+  <img class="hidden" src="images/platform1.png" alt="platform1" data-name="platform1">
+  <img class="hidden" src="images/platform2.png" alt="platform2" data-name="platform2">
+  <img class="hidden" src="images/platform3.png" alt="platform3" data-name="platform3">
+  <img class="hidden" src="images/platform4.png" alt="platform4" data-name="platform4">
+  <img class="hidden" src="images/platform5.png" alt="platform5" data-name="platform5">
+  <img class="hidden" src="images/roof.png" alt="roof" data-name="roof">
+</section>
+
+<main>
+<h1>bombjack</h1>
+
+<canvas id="screen">
+The game screen appears here if your browser supports the Canvas API.
+</canvas>
+<section id="controls">
+  <button type="button" id="reset">Reset</button>
+  <button type="button" id="pause">Pause</button>
+</section>
+
+<h2>Attribution</h2>
+
+<p><a href="https://wireframe.raspberrypi.com/issues/59">Code an explosive homage to Bomb Jack, pages 64-65, by Mark Vanstone</a>.</p>
+
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/legalcode">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported</a>.</p>
+
+<p><a href="https://www.raspberrypi.com/news/code-an-explosive-homage-to-bomb-jack-wireframe-59/">Blog post of Source Code</a>.</p>
+
+<h2>Original Python code</h2>
+
+<pre id="original"><code>
+# Bomb Jack
+import pgzrun
+WIDTH = 600
+HEIGHT = 650
+jack = Actor(&#x27;jackf&#x27;,(300,300))
+ground = Actor(&#x27;ground&#x27;,(300,640))
+roof = Actor(&#x27;roof&#x27;,(300,61))
+platform1 = Actor(&#x27;platform1&#x27;,(400,180))
+platform2 = Actor(&#x27;platform2&#x27;,(420,580))
+platform3 = Actor(&#x27;platform3&#x27;,(320,440))
+platform4 = Actor(&#x27;platform4&#x27;,(180,250))
+platform5 = Actor(&#x27;platform5&#x27;,(120,510))
+platformList = [roof,ground,platform1,platform2,platform3,platform4,platform5]
+jack.thrust = gameState = count = frame = score = 0
+jack.dir = &quot;l&quot;
+bombs = []
+bombXY = [(110,95),(170,95),(230,95),(430,95),(490,95),(550,95),(40,290),(40,350),(40,410),(40,470),(560,290),(560,350),(560,410),(560,470),(110,605),(170,605),(230,605),(360,545),(420,545),(480,545)]
+for b in bombXY:
+    bombs.append(Actor(&#x27;bomb1&#x27;, center=(b[0], b[1])))
+    bombs[len(bombs)-1].state = 1
+
+def draw():
+    screen.blit(&quot;background&quot;,(0,0))
+    for p in platformList: p.draw()
+    for b in bombs :
+        if b.state &gt; 0 :
+            b.image = &quot;bomb&quot;+str(int(b.state))
+            b.draw()
+    jack.draw()
+    screen.draw.text(&quot;SCORE:&quot;+str(score), center= (300, 28), owidth=0.5, ocolor=(255,255,255), color=(255,0,0) , fontsize=40)
+    if gameState == 1: screen.draw.text(&quot;LEVEL CLEARED&quot;, center = (300, 300), owidth=0.5, ocolor=(255,255,255), color=(0,255,255) , fontsize=50)
+
+def update():
+    global count, frame
+    if gameState == 0:
+        jack.dir = &quot;f&quot;
+        ytest = jack.y
+        if keyboard.up:
+            jack.dir = &quot;u&quot;
+        if checkCollisions(platformList,(jack.x,jack.y+(jack.height/2))) == False : jack.y += 4
+        if checkCollisions(platformList,(jack.x,jack.y-32)) == False : jack.y -= jack.thrust
+        jack.thrust = limit(jack.thrust-0.4,0,20)
+        if jack.y &gt; ytest+1: jack.dir = &quot;d&quot;
+        if jack.y &lt; ytest-1: jack.dir = &quot;u&quot;
+        if keyboard.left and jack.x &gt; 40:
+            if jack.y != ytest:
+                jack.dir = &quot;lf&quot;
+                jack.y -= 2
+            else:
+                jack.dir = &quot;l&quot; + str(frame%2+1)
+            jack.x -= 2
+        if keyboard.right and jack.x &lt; 560:
+            if jack.y != ytest:
+                jack.dir = &quot;rf&quot;
+                jack.y -= 2
+            else:
+                jack.dir = &quot;r&quot; + str(frame%2+1)
+            jack.x += 2
+        jack.image = &quot;jack&quot; + jack.dir
+        checkBombs()
+        count += 1
+        if(count%5 == 0) : frame += 1
+
+def on_key_down(key):
+    global gameState
+    if gameState == 0:
+        if key.name == &quot;UP&quot; and jack.dir == &quot;f&quot;:
+            jack.thrust = 20
+            jack.dir = &quot;u&quot;
+
+def limit(n, minn, maxn):
+    return max(min(maxn, n), minn)
+
+def checkCollisions(cList, point):
+    for i in range(0, len(cList)):
+        if cList[i].collidepoint(point):
+            return True
+    return False
+
+def checkBombs():
+    global gameState, score
+    bombsCollected = 0
+    for b in bombs:
+        if b.state &gt; 1: b.state += 0.4
+        if b.state == 0 : bombsCollected += 1
+        if b.collidepoint((jack.x,jack.y)) and b.state == 1:
+            b.state = 1.4
+        if int(b.state) &gt; 4 :
+            b.state = 0
+            score += 100
+    if bombsCollected == len(bombs): gameState = 1
+
+pgzrun.go()
+</code></pre>
+</main>
+
+<script>
+// Bomb Jack
+WIDTH = 600;
+HEIGHT = 650;
+
+const BOMBS_XY = [[110, 95], [170, 95], [230, 95], [430, 95], [490, 95], [550, 95], [40, 290], [40, 350], [40, 410], [40, 470], [560, 290], [560, 350], [560, 410], [560, 470], [110, 605], [170, 605], [230, 605], [360, 545], [420, 545], [480, 545]];
+
+var jack, platformList, gameState, count, frame, score, bombs;
+
+function reset() {
+  let ground = new Actor('ground'),
+      roof = new Actor('roof'),
+      platform1 = new Actor('platform1'),
+      platform2 = new Actor('platform2'),
+      platform3 = new Actor('platform3'),
+      platform4 = new Actor('platform4'),
+      platform5 = new Actor('platform5'),
+      b;
+
+  jack = new Actor('jackf');
+  jack.pos = [300, 300];
+  ground.pos = [300, 640];
+  roof.pos = [300, 61];
+  platform1.pos = [400, 180];
+  platform2.pos = [420, 580];
+  platform3.pos = [320, 440];
+  platform4.pos = [180, 250];
+  platform5.pos = [120, 510];
+  platformList = [roof, ground, platform1, platform2, platform3, platform4, platform5];
+  jack.thrust = 0;
+  gameState = 0;
+  count = 0;
+  frame = 0;
+  score = 0;
+  jack.dir = "l";
+  bombs = [];
+  for (let [x, y] of BOMBS_XY) {
+    b = new Actor('bomb1');
+    b.center = [x, y];
+    b.state = 1;
+    bombs.push(b);
+  }
+}
+
+function draw() {
+  screen.blit("background", [0, 0]);
+  for (let p of platformList) {
+    p.draw();
+  }
+  for (let b of bombs) {
+    if (b.state > 0) {
+      b.name = "bomb" + Math.trunc(b.state);
+      b.draw();
+    }
+  }
+  jack.draw();
+  screen.draw.text("SCORE:" + score, {
+    center: [300, 28],
+    owidth: 0.5,
+    ocolor: [255, 255, 255],
+    color: [255, 0, 0],
+    fontsize: 40
+  });
+  if (gameState === 1) {
+    screen.draw.text("LEVEL CLEARED", {
+      center: [300, 300],
+      owidth: 0.5,
+      ocolor: [255, 255, 255],
+      color: [0, 255, 255],
+      fontsize: 50
+    });
+  }
+}
+
+function update() {
+  if (gameState === 0) {
+    jack.dir = "f";
+    let ytest = jack.posy;
+    if (keyboard[keys.UP]) {
+      jack.dir = "u";
+    }
+    if (!checkCollisions(platformList, [jack.posx, jack.posy + (jack.height / 2)])) {
+      jack.posy += 4;
+    }
+    if (!checkCollisions(platformList, [jack.posx, jack.posy - 32])) {
+      jack.posy -= jack.thrust;
+    }
+    jack.thrust = limit(jack.thrust - 0.4, 0, 20);
+    if (jack.posy > (ytest + 1)) {
+      jack.dir = "d";
+    }
+    if (jack.posy < (ytest - 1)) {
+      jack.dir = "u";
+    }
+    if (keyboard[keys.LEFT] && (jack.posx > 40)) {
+      if (jack.posy !== ytest) {
+        jack.dir = "lf";
+        jack.posy -= 2;
+      }
+      else {
+        jack.dir = "l" + ((frame % 2) + 1);
+      }
+      jack.posx -= 2;
+    }
+    if (keyboard[keys.RIGHT] && (jack.posx < 560)) {
+      if (jack.posy !== ytest) {
+        jack.dir = "rf";
+        jack.posy -= 2;
+      }
+      else {
+        jack.dir = "r" + ((frame % 2) + 1);
+      }
+      jack.posx += 2;
+    }
+    jack.name = "jack" + jack.dir;
+    checkBombs();
+    count += 1;
+    if ((count % 5) === 0) {
+      frame += 1;
+    }
+  }
+}
+
+function on_key_down(key) {
+  if (gameState === 0) {
+    if ((key === keys.UP) && (jack.dir === "f")) {
+      jack.thrust = 20;
+      jack.dir = "u";
+    }
+  }
+}
+
+function limit(n, minn, maxn) {
+  return Math.max(Math.min(maxn, n), minn);
+}
+
+function checkCollisions(cList, point) {
+  for (let p of cList) {
+    if (p.collidepoint(point)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function checkBombs() {
+  let bombsCollected = 0;
+  for (let b of bombs) {
+    if (b.state > 1) {
+      b.state += 0.4;
+    }
+    if (b.state === 0) {
+      bombsCollected += 1;
+    }
+    if (b.collidepoint([jack.posx, jack.posy]) && (b.state === 1)) {
+      b.state = 1.4;
+    }
+    if (Math.trunc(b.state) > 4) {
+      b.state = 0;
+      score += 100;
+    }
+  }
+  if (bombsCollected === bombs.length) {
+    gameState = 1;
+  }
+}
+
+window.addEventListener('load', (event) => {
+  images.LOAD('#imageLoader img');
+  reset();
+  screen.set_mode('#screen', '#reset', '#pause');
+});
+</script>
+</body>
+
+</html>
