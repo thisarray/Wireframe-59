@@ -6,3 +6,5 @@ Make a Dark Souls-style messaging system in Unreal Engine 4, pages 50-55, by Rya
 Code an explosive homage to Bomb Jack, pages 64-65, by Mark Vanstone.
 
 The code examples are licenced under Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported.
+
+[Run the JavaScript port of Source Code in your browser.](https://thisarray.github.io/Wireframe-59/bombjack-source-code/bombjack.html)
